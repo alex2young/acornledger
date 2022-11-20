@@ -1,0 +1,25 @@
+[package]
+name = "acornledger"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name = "acornledger-server"
+path = "src/server.rs"
+
+[[bin]]
+name = "acornledger-client"
+path = "src/client.rs"
+
+[dependencies]
+chrono = "0.4.23"
+prost = "0.11.2"
+rust_decimal = "1.26.1"
+rust_decimal_macros = "1.26.1"
+tokio = { version = "1.22.0", features = ["macros", "rt-multi-thread"] }
+tonic = "0.8.2"
+
+[build-dependencies]
+tonic-build = "0.8.2"

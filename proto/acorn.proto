@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+
+package acorn;
+
+service Acorn {
+  rpc GetBalance(GetBalanceRequest) returns (GetBalanceResponse);
+}
+
+message GetBalanceRequest {
+  string account = 1;
+}
+
+message GetBalanceResponse {
+  string account = 1;
+  Amount amount = 2;
+}
+
+message Amount {
+  string number = 1;
+  string currency = 2;
+}

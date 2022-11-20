@@ -1,9 +1,9 @@
 use tonic::Request;
 
-use proto::acorn::acorn_client::AcornClient;
-use proto::acorn::GetBalanceRequest;
+use crate::proto::acorn::acorn_client::AcornClient;
+use crate::proto::acorn::GetBalanceRequest;
 
-pub mod proto;
+mod proto;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -14,16 +14,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
 
     let response = client.get_balance(request).await?;
-
-    println!("ACCOUNT = {:?}", response.get_ref().account);
-    println!(
-        "NUMBER = {:?}",
-        response.get_ref().amount.as_ref().unwrap().number
-    );
-    println!(
-        "CURRENCY = {:?}",
-        response.get_ref().amount.as_ref().unwrap().currency
-    );
+    println!("{:?}", response);
 
     Ok(())
 }

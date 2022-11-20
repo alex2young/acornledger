@@ -1,36 +1,10 @@
 use chrono::NaiveDate;
 use rust_decimal::Decimal;
+use std::collections::HashMap;
 
-#[derive(Eq, PartialEq, Hash)]
-pub struct Account {
-    name: String,
-}
-
-impl Account {
-    pub fn new(name: String) -> Self {
-        Self { name }
-    }
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-}
-
-#[derive(Copy, Clone, Debug)]
-pub enum Currency {
-    CNY,
-    USD,
-    JPY,
-}
-
-impl Currency {
-    pub fn to_string(&self) -> String {
-        String::from(match self {
-            Currency::CNY => "CNY",
-            Currency::USD => "USD",
-            Currency::JPY => "JPY",
-        })
-    }
-}
+pub type Account = String;
+pub type Currency = String;
+pub type Meta = Option<HashMap<String, String>>;
 
 #[derive(Debug)]
 pub struct Amount {
@@ -42,53 +16,54 @@ impl Amount {
     pub fn number(&self) -> Decimal {
         self.number
     }
-    pub fn currency(&self) -> &Currency {
+    pub fn currency(&self) -> &str {
         &self.currency
     }
-    pub fn new(currency: Currency) -> Self {
-        Self {
-            number: Decimal::new(0, 0),
-            currency,
-        }
-    }
-    pub fn from(number: Decimal, currency: Currency) -> Self {
+    pub fn new(number: Decimal, currency: Currency) -> Self {
         Self { number, currency }
     }
-    pub fn set_number(&mut self, number: Decimal) {
-        self.number = number;
+    pub fn plus(&mut self, other: &Amount) {
+        self.number += other.number();
     }
 }
 
-pub struct TxEntry {
+pub struct Posting {
     account: Account,
     amount: Amount,
+    meta: Meta,
 }
 
-impl TxEntry {
-    pub fn account(&self) -> &Account {
+impl Posting {
+    pub fn account(&self) -> &str {
         &self.account
     }
     pub fn amount(&self) -> &Amount {
         &self.amount
     }
     pub fn new(account: Account, amount: Amount) -> Self {
-        Self { account, amount }
+        Self {
+            account,
+            amount,
+            meta: None,
+        }
     }
 }
 
 pub struct Transaction {
     date: NaiveDate,
-    entries: Vec<TxEntry>,
+    description: String,
+    postings: Vec<Posting>,
 }
 
 impl Transaction {
-    pub fn date(&self) -> NaiveDate {
-        self.date
+    pub fn postings(&self) -> &Vec<Posting> {
+        &self.postings
     }
-    pub fn entries(&self) -> &Vec<TxEntry> {
-        &self.entries
-    }
-    pub fn new(date: NaiveDate, entries: Vec<TxEntry>) -> Self {
-        Self { date, entries }
+    pub fn new(date: NaiveDate, description: &str, postings: Vec<Posting>) -> Self {
+        Self {
+            date,
+            description: String::from(description),
+            postings,
+        }
     }
 }

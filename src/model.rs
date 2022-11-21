@@ -1,6 +1,7 @@
 use chrono::NaiveDate;
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::error::Error;
 
@@ -8,9 +9,9 @@ use crate::error::AcornError;
 
 pub type Account = String;
 pub type Currency = String;
-pub type Meta = Option<HashMap<String, String>>;
+// pub type Meta = Option<HashMap<String, String>>;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Amount {
     number: Decimal,
     currency: Currency,
@@ -33,14 +34,14 @@ impl Amount {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Posting {
     account: Account,
     amount: Amount,
-    meta: Meta,
 }
 
 impl Posting {
-    pub fn account(&self) -> &str {
+    pub fn account(&self) -> &Account {
         &self.account
     }
     pub fn amount(&self) -> &Amount {
@@ -48,14 +49,11 @@ impl Posting {
     }
 
     pub fn new(account: Account, amount: Amount) -> Self {
-        Self {
-            account,
-            amount,
-            meta: None,
-        }
+        Self { account, amount }
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Transaction {
     date: NaiveDate,
     description: String,

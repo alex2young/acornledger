@@ -1,10 +1,8 @@
-use chrono::NaiveDate;
-use rust_decimal_macros::dec;
 use std::error::Error;
 use tonic::{transport::Server, Request, Response, Status};
 
 use crate::ledger::Ledger;
-use crate::model::{Account, Amount, Currency, Posting, Transaction};
+use crate::model::{Account, Amount, Transaction};
 use crate::proto::acorn;
 use crate::proto::acorn::acorn_server::{Acorn, AcornServer};
 use crate::proto::acorn::{GetBalanceRequest, GetBalanceResponse};
@@ -12,6 +10,7 @@ use crate::proto::acorn::{GetBalanceRequest, GetBalanceResponse};
 mod error;
 mod ledger;
 mod model;
+mod parser;
 mod proto;
 
 pub struct AcornImpl {
@@ -59,20 +58,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let addr = "[::1]:50051".parse().unwrap();
     let mut acorn = AcornImpl::new(Ledger::default());
 
-    acorn.process(Vec::from([Transaction::new(
-        NaiveDate::from_ymd_opt(2022, 11, 1).unwrap(),
-        "first txn",
-        Vec::from([
-            Posting::new(
-                Account::from("Cash"),
-                Amount::new(dec!(100), Currency::from("USD")),
-            ),
-            Posting::new(
-                Account::from("Bank"),
-                Amount::new(dec!(-100), Currency::from("USD")),
-            ),
-        ]),
-    )?]));
+    let tns = parser::parse_transactions_from_json("./data/input.json")?;
+    acorn.process(tns);
 
     println!("AcornServer listening on {}", addr);
 

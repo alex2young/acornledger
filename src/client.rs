@@ -1,3 +1,4 @@
+use std::error::Error;
 use tonic::Request;
 
 use crate::proto::acorn::acorn_client::AcornClient;
@@ -6,7 +7,7 @@ use crate::proto::acorn::GetBalanceRequest;
 mod proto;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> Result<(), Box<dyn Error>> {
     let mut client = AcornClient::connect("http://[::1]:50051").await?;
 
     let request = Request::new(GetBalanceRequest {

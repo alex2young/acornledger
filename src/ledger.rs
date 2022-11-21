@@ -1,6 +1,7 @@
-use crate::model::{Account, Amount, Currency, Transaction};
 use rust_decimal_macros::dec;
 use std::collections::HashMap;
+
+use crate::model::{Account, Amount, Transaction};
 
 #[derive(Default)]
 pub struct Ledger {
@@ -12,14 +13,12 @@ impl Ledger {
         for txn in transactions.into_iter() {
             for posting in txn.postings() {
                 let account = posting.account();
-                let currency = posting.amount().currency();
-                if !self.account_balances.contains_key(account) {
-                    self.account_balances.insert(
-                        Account::from(account),
-                        Amount::new(dec!(0), Currency::from(currency)),
-                    );
-                }
-                let amount = self.account_balances.get_mut(account).unwrap();
+                let amount = self
+                    .account_balances
+                    .entry(account.clone())
+                    .or_insert_with(|| {
+                        Amount::new(dec!(0), posting.amount().currency().to_string())
+                    });
                 amount.plus(posting.amount());
             }
         }

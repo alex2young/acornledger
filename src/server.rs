@@ -1,6 +1,6 @@
 use chrono::NaiveDate;
 use rust_decimal_macros::dec;
-use std::borrow::Borrow;
+use std::error::Error;
 use tonic::{transport::Server, Request, Response, Status};
 
 use crate::ledger::Ledger;
@@ -55,7 +55,7 @@ impl Acorn for AcornImpl {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> Result<(), Box<dyn Error>> {
     let addr = "[::1]:50051".parse().unwrap();
     let mut acorn = AcornImpl::new(Ledger::default());
 
@@ -72,7 +72,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Amount::new(dec!(-100), Currency::from("USD")),
             ),
         ]),
-    )]));
+    )?]));
 
     println!("AcornServer listening on {}", addr);
 

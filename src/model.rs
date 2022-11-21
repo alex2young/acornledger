@@ -94,3 +94,52 @@ impl Transaction {
         true
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_validate_postings() {
+        assert!(Transaction::validate_postings(&Vec::from([
+            Posting::new(
+                Account::from("Cash"),
+                Amount::new(dec!(100.00), Currency::from("C")),
+            ),
+            Posting::new(
+                Account::from("Bank"),
+                Amount::new(dec!(-100.00), Currency::from("C")),
+            ),
+        ])));
+
+        assert!(!Transaction::validate_postings(&Vec::from([
+            Posting::new(
+                Account::from("Cash"),
+                Amount::new(dec!(100.00), Currency::from("C")),
+            ),
+            Posting::new(
+                Account::from("Bank"),
+                Amount::new(dec!(-101.00), Currency::from("C")),
+            ),
+        ])));
+
+        assert!(Transaction::validate_postings(&Vec::from([
+            Posting::new(
+                Account::from("Cash"),
+                Amount::new(dec!(100.00), Currency::from("C")),
+            ),
+            Posting::new(
+                Account::from("Bank"),
+                Amount::new(dec!(-100.00), Currency::from("C")),
+            ),
+            Posting::new(
+                Account::from("Expenses"),
+                Amount::new(dec!(220.00), Currency::from("X")),
+            ),
+            Posting::new(
+                Account::from("Income"),
+                Amount::new(dec!(-220.00), Currency::from("X")),
+            ),
+        ])));
+    }
+}

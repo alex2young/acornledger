@@ -60,6 +60,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let tns = parser::parse_transactions_from_json("./data/input.json")?;
     acorn.process(tns);
+    // acorn.acorn_ledger.dump_to_json("./data/output.json")?;
 
     println!("AcornServer listening on {}", addr);
 

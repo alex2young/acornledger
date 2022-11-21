@@ -1,5 +1,9 @@
 use rust_decimal_macros::dec;
 use std::collections::HashMap;
+use std::error::Error;
+use std::fs::File;
+use std::io::BufWriter;
+use std::path::Path;
 
 use crate::model::{Account, Amount, Transaction};
 
@@ -26,5 +30,11 @@ impl Ledger {
 
     pub fn get_balance(&self, account: &Account) -> Option<&Amount> {
         self.account_balances.get(account)
+    }
+
+    pub fn dump_to_json(&self, filepath: &str) -> Result<(), Box<dyn Error>> {
+        let file = File::create(Path::new(filepath))?;
+        serde_json::to_writer(BufWriter::new(file), &self.account_balances)?;
+        Ok(())
     }
 }

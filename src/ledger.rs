@@ -25,7 +25,7 @@ impl Ledger {
     }
 
     pub fn process(&mut self, transactions: &Vec<Transaction>) {
-        for txn in transactions.into_iter() {
+        for txn in transactions.iter() {
             self.add_transaction(txn);
         }
     }

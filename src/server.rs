@@ -48,7 +48,7 @@ impl Acorn for AcornImpl {
                         Amount::new(
                             Decimal::from_str_exact(p.amount.as_ref().unwrap().number.as_str())
                                 .unwrap_or_default(),
-                            p.amount.unwrap_or_default().currency.to_string(),
+                            p.amount.unwrap_or_default().currency,
                         ),
                     )
                 })
@@ -78,13 +78,15 @@ impl Acorn for AcornImpl {
         let account = request.into_inner().account;
         let reply = GetBalanceResponse {
             account: account.clone(),
-            amount: match self.ledger.lock().unwrap().get_balance(&account) {
-                None => None,
-                Some(amount) => Some(acorn::Amount {
+            amount: self
+                .ledger
+                .lock()
+                .unwrap()
+                .get_balance(&account)
+                .map(|amount| acorn::Amount {
                     number: amount.number().to_string(),
                     currency: String::from(amount.currency()),
                 }),
-            },
         };
         Ok(Response::new(reply))
     }

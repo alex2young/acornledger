@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::error::Error;
 
 use crate::error::AcornError;
+use crate::proto;
 
 pub type Account = String;
 pub type Currency = String;
@@ -32,6 +33,20 @@ impl Amount {
     pub fn plus(&mut self, other: &Amount) {
         self.number += other.number();
     }
+
+    fn from(amount: &proto::acorn::Amount) -> Self {
+        Self {
+            number: Decimal::from_str_exact(&amount.number).unwrap(),
+            currency: Currency::from(&amount.currency),
+        }
+    }
+
+    pub fn to_message(&self) -> proto::acorn::Amount {
+        proto::acorn::Amount {
+            number: self.number.to_string(),
+            currency: String::from(&self.currency),
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -50,6 +65,13 @@ impl Posting {
 
     pub fn new(account: Account, amount: Amount) -> Self {
         Self { account, amount }
+    }
+
+    fn from(posting: &proto::acorn::Posting) -> Self {
+        Self {
+            account: Account::from(&posting.account),
+            amount: Amount::from(posting.amount.as_ref().unwrap()),
+        }
     }
 }
 
@@ -92,6 +114,19 @@ impl Transaction {
             }
         }
         true
+    }
+
+    pub fn from(transaction: proto::acorn::Transaction) -> Result<Self, Box<dyn Error>> {
+        Self::new(
+            transaction
+                .date
+                .map(|date| {
+                    NaiveDate::from_ymd_opt(date.year as i32, date.month, date.day).unwrap()
+                })
+                .unwrap(),
+            &transaction.description,
+            transaction.postings.iter().map(Posting::from).collect(),
+        )
     }
 }
 

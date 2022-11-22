@@ -2,8 +2,28 @@ syntax = "proto3";
 
 package acorn;
 
-service Acorn {
-  rpc GetBalance(GetBalanceRequest) returns (GetBalanceResponse);
+message Amount {
+  string number = 1;
+  string currency = 2;
+}
+
+message Date {
+  uint32 year = 1;
+  uint32 month = 2;
+  uint32 day = 3;
+}
+
+message Empty {};
+
+message Posting {
+  string account = 1;
+  Amount amount = 2;
+}
+
+message Transaction {
+  Date date = 1;
+  string description = 2;
+  repeated Posting postings = 3;
 }
 
 message GetBalanceRequest {
@@ -15,7 +35,12 @@ message GetBalanceResponse {
   Amount amount = 2;
 }
 
-message Amount {
-  string number = 1;
-  string currency = 2;
+message AddTransactionRequest {
+  Transaction transaction = 1;
+}
+
+service Acorn {
+  rpc AddTransaction(AddTransactionRequest) returns (Empty);
+  rpc DumpTransactions(Empty) returns (Empty);
+  rpc GetBalance(GetBalanceRequest) returns (GetBalanceResponse);
 }

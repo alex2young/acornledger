@@ -3,7 +3,7 @@ use std::path::Path;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let proto_dir = "src/proto";
-    fs::create_dir(Path::new(proto_dir))?;
+    fs::create_dir_all(Path::new(proto_dir))?;
 
     tonic_build::configure()
         .build_server(true)

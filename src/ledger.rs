@@ -1,5 +1,9 @@
 use rust_decimal_macros::dec;
 use std::collections::HashMap;
+use std::error::Error;
+use std::fs::File;
+use std::io::BufWriter;
+use std::path::Path;
 
 use crate::model::{Account, Amount, Transaction};
 
@@ -9,22 +13,30 @@ pub struct Ledger {
 }
 
 impl Ledger {
-    pub fn process(&mut self, transactions: Vec<Transaction>) {
-        for txn in transactions.into_iter() {
-            for posting in txn.postings() {
-                let account = posting.account();
-                let amount = self
-                    .account_balances
-                    .entry(account.clone())
-                    .or_insert_with(|| {
-                        Amount::new(dec!(0), posting.amount().currency().to_string())
-                    });
-                amount.plus(posting.amount());
-            }
+    pub fn add_transaction(&mut self, transaction: &Transaction) {
+        for posting in transaction.postings() {
+            let account = posting.account();
+            let amount = self
+                .account_balances
+                .entry(account.clone())
+                .or_insert_with(|| Amount::new(dec!(0), posting.amount().currency().to_string()));
+            amount.plus(posting.amount());
+        }
+    }
+
+    pub fn process(&mut self, transactions: &Vec<Transaction>) {
+        for txn in transactions.iter() {
+            self.add_transaction(txn);
         }
     }
 
     pub fn get_balance(&self, account: &Account) -> Option<&Amount> {
         self.account_balances.get(account)
+    }
+
+    pub fn dump_to_json(&self, filepath: &str) -> Result<(), Box<dyn Error>> {
+        let file = File::create(Path::new(filepath))?;
+        serde_json::to_writer(BufWriter::new(file), &self.account_balances)?;
+        Ok(())
     }
 }

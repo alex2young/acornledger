@@ -6,7 +6,7 @@ pub struct AcornError;
 
 impl Display for AcornError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self)
+        write!(f, "AcornError")
     }
 }
 

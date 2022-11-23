@@ -1,12 +1,10 @@
-use chrono::NaiveDate;
-use rust_decimal::Decimal;
 use std::error::Error;
 use std::sync::Mutex;
 use tonic::{transport::Server, Request, Response, Status};
 
 use crate::ledger::Ledger;
-use crate::model::{Amount, Posting, Transaction};
-use crate::proto::acorn;
+use crate::model::Transaction;
+
 use crate::proto::acorn::acorn_server::{Acorn, AcornServer};
 use crate::proto::acorn::{AddTransactionRequest, Empty, GetBalanceRequest, GetBalanceResponse};
 
@@ -34,32 +32,18 @@ impl Acorn for AcornImpl {
         &self,
         request: Request<AddTransactionRequest>,
     ) -> Result<Response<Empty>, Status> {
-        let input_txn = request.into_inner().transaction.unwrap_or_default();
-        let date = input_txn.date.unwrap_or_default();
-        let transaction = Transaction::new(
-            NaiveDate::from_ymd_opt(date.year as i32, date.month, date.day).unwrap_or_default(),
-            input_txn.description.as_str(),
-            input_txn
-                .postings
-                .into_iter()
-                .map(|p| {
-                    Posting::new(
-                        p.account,
-                        Amount::new(
-                            Decimal::from_str_exact(p.amount.as_ref().unwrap().number.as_str())
-                                .unwrap_or_default(),
-                            p.amount.unwrap_or_default().currency,
-                        ),
-                    )
-                })
-                .collect(),
-        )
-        .unwrap();
-        self.ledger.lock().unwrap().add_transaction(&transaction);
-        Ok(Response::new(Empty {}))
+        let transaction_result =
+            Transaction::from(request.into_inner().transaction.unwrap_or_default());
+        match transaction_result {
+            Ok(transaction) => {
+                self.ledger.lock().unwrap().add_transaction(transaction);
+                Ok(Response::new(Empty {}))
+            }
+            Err(_) => Err(Status::data_loss("".to_string())),
+        }
     }
 
-    async fn dump_transactions(&self, _request: Request<Empty>) -> Result<Response<Empty>, Status> {
+    async fn dump_to_json(&self, _request: Request<Empty>) -> Result<Response<Empty>, Status> {
         match self
             .ledger
             .lock()
@@ -82,11 +66,8 @@ impl Acorn for AcornImpl {
                 .ledger
                 .lock()
                 .unwrap()
-                .get_balance(&account)
-                .map(|amount| acorn::Amount {
-                    number: amount.number().to_string(),
-                    currency: String::from(amount.currency()),
-                }),
+                .get_latest_balance(&account)
+                .map(|amount| amount.to_message()),
         };
         Ok(Response::new(reply))
     }
@@ -98,7 +79,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let acorn = AcornImpl::new(Ledger::default());
 
     let tns = parser::parse_transactions_from_json("./data/input.json")?;
-    acorn.ledger.lock().unwrap().process(&tns);
+    acorn.ledger.lock().unwrap().add_transactions(tns);
 
     println!("AcornServer listening on {}", addr);
 

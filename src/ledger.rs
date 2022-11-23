@@ -30,7 +30,7 @@ impl Serialize for TxKey {
     where
         S: Serializer,
     {
-        serializer.serialize_str(&format!("{}:{}", self.date.to_string(), self.id))
+        serializer.serialize_str(&format!("{}:{}", self.date, self.id))
     }
 }
 

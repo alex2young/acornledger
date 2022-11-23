@@ -8,14 +8,10 @@ use std::error::Error;
 use crate::error::AcornError;
 use crate::proto;
 
-pub type Account = String;
-pub type Currency = String;
-// pub type Meta = Option<HashMap<String, String>>;
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Amount {
     number: Decimal,
-    currency: Currency,
+    currency: String,
 }
 
 impl Amount {
@@ -26,7 +22,7 @@ impl Amount {
         &self.currency
     }
 
-    pub fn new(number: Decimal, currency: Currency) -> Self {
+    pub fn new(number: Decimal, currency: String) -> Self {
         Self { number, currency }
     }
 
@@ -37,7 +33,7 @@ impl Amount {
     fn from(amount: &proto::acorn::Amount) -> Self {
         Self {
             number: Decimal::from_str_exact(&amount.number).unwrap(),
-            currency: Currency::from(&amount.currency),
+            currency: String::from(&amount.currency),
         }
     }
 
@@ -51,25 +47,25 @@ impl Amount {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Posting {
-    account: Account,
+    account: String,
     amount: Amount,
 }
 
 impl Posting {
-    pub fn account(&self) -> &Account {
+    pub fn account(&self) -> &String {
         &self.account
     }
     pub fn amount(&self) -> &Amount {
         &self.amount
     }
 
-    pub fn new(account: Account, amount: Amount) -> Self {
+    pub fn new(account: String, amount: Amount) -> Self {
         Self { account, amount }
     }
 
     fn from(posting: &proto::acorn::Posting) -> Self {
         Self {
-            account: Account::from(&posting.account),
+            account: String::from(&posting.account),
             amount: Amount::from(posting.amount.as_ref().unwrap()),
         }
     }
@@ -138,42 +134,42 @@ mod tests {
     fn test_validate_postings() {
         assert!(Transaction::validate_postings(&Vec::from([
             Posting::new(
-                Account::from("Cash"),
-                Amount::new(dec!(100.00), Currency::from("C")),
+                String::from("Cash"),
+                Amount::new(dec!(100.00), String::from("C")),
             ),
             Posting::new(
-                Account::from("Bank"),
-                Amount::new(dec!(-100.00), Currency::from("C")),
+                String::from("Bank"),
+                Amount::new(dec!(-100.00), String::from("C")),
             ),
         ])));
 
         assert!(!Transaction::validate_postings(&Vec::from([
             Posting::new(
-                Account::from("Cash"),
-                Amount::new(dec!(100.00), Currency::from("C")),
+                String::from("Cash"),
+                Amount::new(dec!(100.00), String::from("C")),
             ),
             Posting::new(
-                Account::from("Bank"),
-                Amount::new(dec!(-101.00), Currency::from("C")),
+                String::from("Bank"),
+                Amount::new(dec!(-101.00), String::from("C")),
             ),
         ])));
 
         assert!(Transaction::validate_postings(&Vec::from([
             Posting::new(
-                Account::from("Cash"),
-                Amount::new(dec!(100.00), Currency::from("C")),
+                String::from("Cash"),
+                Amount::new(dec!(100.00), String::from("C")),
             ),
             Posting::new(
-                Account::from("Bank"),
-                Amount::new(dec!(-100.00), Currency::from("C")),
+                String::from("Bank"),
+                Amount::new(dec!(-100.00), String::from("C")),
             ),
             Posting::new(
-                Account::from("Expenses"),
-                Amount::new(dec!(220.00), Currency::from("X")),
+                String::from("Expenses"),
+                Amount::new(dec!(220.00), String::from("X")),
             ),
             Posting::new(
-                Account::from("Income"),
-                Amount::new(dec!(-220.00), Currency::from("X")),
+                String::from("Income"),
+                Amount::new(dec!(-220.00), String::from("X")),
             ),
         ])));
     }

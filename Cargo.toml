@@ -15,6 +15,7 @@ path = "src/client.rs"
 
 [dependencies]
 chrono = { version = "0.4", features=["serde"] }
+derive_builder = "0.11"
 prost = "0.11"
 rust_decimal = "1.26"
 rust_decimal_macros = "1.26"

@@ -5,11 +5,11 @@ use std::fs::File;
 use std::io::BufWriter;
 use std::path::Path;
 
-use crate::model::{Account, Amount, Transaction};
+use crate::model::{Amount, Transaction};
 
 #[derive(Default)]
 pub struct Ledger {
-    account_balances: HashMap<Account, Amount>,
+    account_balances: HashMap<String, Amount>,
 }
 
 impl Ledger {
@@ -30,7 +30,7 @@ impl Ledger {
         }
     }
 
-    pub fn get_balance(&self, account: &Account) -> Option<&Amount> {
+    pub fn get_balance(&self, account: &str) -> Option<&Amount> {
         self.account_balances.get(account)
     }
 

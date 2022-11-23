@@ -83,6 +83,10 @@ impl Transaction {
         &self.postings
     }
 
+    pub fn date(&self) -> NaiveDate {
+        self.date
+    }
+
     pub fn new(
         date: NaiveDate,
         description: &str,

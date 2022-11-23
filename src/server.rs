@@ -36,14 +36,14 @@ impl Acorn for AcornImpl {
             Transaction::from(request.into_inner().transaction.unwrap_or_default());
         match transaction_result {
             Ok(transaction) => {
-                self.ledger.lock().unwrap().add_transaction(&transaction);
+                self.ledger.lock().unwrap().add_transaction(transaction);
                 Ok(Response::new(Empty {}))
             }
             Err(_) => Err(Status::data_loss("".to_string())),
         }
     }
 
-    async fn dump_transactions(&self, _request: Request<Empty>) -> Result<Response<Empty>, Status> {
+    async fn dump_to_json(&self, _request: Request<Empty>) -> Result<Response<Empty>, Status> {
         match self
             .ledger
             .lock()
@@ -66,7 +66,7 @@ impl Acorn for AcornImpl {
                 .ledger
                 .lock()
                 .unwrap()
-                .get_balance(&account)
+                .get_latest_balance(&account)
                 .map(|amount| amount.to_message()),
         };
         Ok(Response::new(reply))
@@ -79,7 +79,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let acorn = AcornImpl::new(Ledger::default());
 
     let tns = parser::parse_transactions_from_json("./data/input.json")?;
-    acorn.ledger.lock().unwrap().process(&tns);
+    acorn.ledger.lock().unwrap().add_transactions(tns);
 
     println!("AcornServer listening on {}", addr);
 

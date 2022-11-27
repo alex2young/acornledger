@@ -3,7 +3,7 @@ use tonic::Request;
 
 use crate::proto::acorn::acorn_client::AcornClient;
 use crate::proto::acorn::{
-    AddTransactionRequest, Amount, Date, Empty, GetBalanceRequest, Posting, Transaction,
+    AddTransactionRequest, Amount, Date, Empty, GetLatestBalanceRequest, Posting, Transaction,
 };
 
 mod proto;
@@ -13,7 +13,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let mut client = AcornClient::connect("http://[::1]:50051").await?;
 
     let resp1 = client
-        .get_balance(Request::new(GetBalanceRequest {
+        .get_latest_balance(Request::new(GetLatestBalanceRequest {
             account: String::from("Cash"),
         }))
         .await?;
@@ -50,7 +50,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     println!("{:?}", resp2);
 
     let resp3 = client
-        .get_balance(Request::new(GetBalanceRequest {
+        .get_latest_balance(Request::new(GetLatestBalanceRequest {
             account: String::from("Cash"),
         }))
         .await?;

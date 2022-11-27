@@ -26,13 +26,19 @@ message Transaction {
   repeated Posting postings = 3;
 }
 
+message GetLatestBalanceRequest {
+  string account = 1;
+}
+
 message GetBalanceRequest {
   string account = 1;
+  Date begin = 2;
+  Date end = 3;
 }
 
 message GetBalanceResponse {
   string account = 1;
-  Amount amount = 2;
+  repeated Amount amounts = 2;
 }
 
 message AddTransactionRequest {
@@ -42,5 +48,5 @@ message AddTransactionRequest {
 service Acorn {
   rpc AddTransaction(AddTransactionRequest) returns (Empty);
   rpc DumpTransactions(Empty) returns (Empty);
-  rpc GetBalance(GetBalanceRequest) returns (GetBalanceResponse);
+  rpc GetLatestBalance(GetLatestBalanceRequest) returns (GetBalanceResponse);
 }

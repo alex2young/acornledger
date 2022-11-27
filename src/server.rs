@@ -6,7 +6,9 @@ use crate::ledger::Ledger;
 use crate::model::Transaction;
 
 use crate::proto::acorn::acorn_server::{Acorn, AcornServer};
-use crate::proto::acorn::{AddTransactionRequest, Empty, GetBalanceRequest, GetBalanceResponse};
+use crate::proto::acorn::{
+    AddTransactionRequest, Empty, GetBalanceResponse, GetLatestBalanceRequest,
+};
 
 mod error;
 mod ledger;
@@ -43,7 +45,7 @@ impl Acorn for AcornImpl {
         }
     }
 
-    async fn dump_to_json(&self, _request: Request<Empty>) -> Result<Response<Empty>, Status> {
+    async fn dump_transactions(&self, _request: Request<Empty>) -> Result<Response<Empty>, Status> {
         match self
             .ledger
             .lock()
@@ -55,19 +57,21 @@ impl Acorn for AcornImpl {
         }
     }
 
-    async fn get_balance(
+    async fn get_latest_balance(
         &self,
-        request: Request<GetBalanceRequest>,
+        request: Request<GetLatestBalanceRequest>,
     ) -> Result<Response<GetBalanceResponse>, Status> {
         let account = request.into_inner().account;
         let reply = GetBalanceResponse {
             account: account.clone(),
-            amount: self
+            amounts: self
                 .ledger
                 .lock()
                 .unwrap()
                 .get_latest_balance(&account)
-                .map(|amount| amount.to_message()),
+                .into_iter()
+                .map(|amount| amount.to_message())
+                .collect(),
         };
         Ok(Response::new(reply))
     }

@@ -1,4 +1,7 @@
 use chrono::NaiveDate;
+use itertools::Itertools;
+
+
 use serde::{Serialize, Serializer};
 use std::collections::BTreeMap;
 use std::error::Error;
@@ -57,19 +60,29 @@ impl Ledger {
         }
     }
 
-    pub fn get_latest_balance(&self, account: &str) -> Option<Amount> {
+    pub fn get_latest_balance(&self, account: &str) -> Vec<Amount> {
         self.get_balance(account, NaiveDate::MIN, NaiveDate::MAX)
     }
 
-    pub fn get_balance(&self, account: &str, begin: NaiveDate, end: NaiveDate) -> Option<Amount> {
-        let number = self
-            .transactions
+    pub fn get_balance(&self, account: &str, begin: NaiveDate, end: NaiveDate) -> Vec<Amount> {
+        self.transactions
             .range(TxKey::from(begin)..TxKey::from(end))
             .flat_map(|(_, t)| t.postings().iter())
             .filter(|&p| p.account() == account)
-            .map(|p| p.amount().number())
-            .reduce(|acc, p| (acc + p))?;
-        Some(Amount::new(number, "USD".to_string()))
+            .map(|p| p.amount())
+            .group_by(|&a| a.currency())
+            .into_iter()
+            .map(|(key, group)| {
+                (
+                    key,
+                    group
+                        .into_iter()
+                        .map(|a| a.number())
+                        .reduce(|acc, n| (acc + n)),
+                )
+            })
+            .map(|(currency, number)| Amount::new(number.unwrap(), currency.to_string()))
+            .collect::<Vec<Amount>>()
     }
 
     pub fn dump_to_json(&self, filepath: &str) -> Result<(), Box<dyn Error>> {

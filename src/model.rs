@@ -4,12 +4,12 @@ use rust_decimal_macros::dec;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::error::Error;
-use std::ops::Add;
+
 
 use crate::error::AcornError;
 use crate::proto;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Amount {
     number: Decimal,
     currency: String,
@@ -42,17 +42,6 @@ impl Amount {
         proto::acorn::Amount {
             number: self.number.to_string(),
             currency: String::from(&self.currency),
-        }
-    }
-}
-
-impl<'a, 'b> Add<&'b Amount> for &'a Amount {
-    type Output = Amount;
-
-    fn add(self, rhs: &'b Amount) -> Self::Output {
-        Amount {
-            number: self.number + rhs.number,
-            currency: self.currency.to_string(),
         }
     }
 }

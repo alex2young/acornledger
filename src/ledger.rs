@@ -1,7 +1,6 @@
 use chrono::NaiveDate;
 use itertools::Itertools;
 
-
 use serde::{Serialize, Serializer};
 use std::collections::BTreeMap;
 use std::error::Error;

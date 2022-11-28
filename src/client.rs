@@ -3,7 +3,8 @@ use tonic::Request;
 
 use crate::proto::acorn::acorn_client::AcornClient;
 use crate::proto::acorn::{
-    AddTransactionRequest, Amount, Date, Empty, GetLatestBalanceRequest, Posting, Transaction,
+    AddTransactionRequest, Amount, Date, Empty, GetBalanceRequest, GetLatestBalanceRequest,
+    Posting, Transaction,
 };
 
 mod proto;
@@ -56,8 +57,25 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .await?;
     println!("{:?}", resp3);
 
-    let resp4 = client.dump_transactions(Request::new(Empty {})).await?;
+    let resp4 = client
+        .get_balance(Request::new(GetBalanceRequest {
+            account: "Cash".to_string(),
+            begin: Some(Date {
+                year: 2022,
+                month: 11,
+                day: 01,
+            }),
+            end: Some(Date {
+                year: 2022,
+                month: 11,
+                day: 16,
+            }),
+        }))
+        .await?;
     println!("{:?}", resp4);
+
+    let resp5 = client.dump_transactions(Request::new(Empty {})).await?;
+    println!("{:?}", resp5);
 
     Ok(())
 }

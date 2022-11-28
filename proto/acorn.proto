@@ -49,4 +49,5 @@ service Acorn {
   rpc AddTransaction(AddTransactionRequest) returns (Empty);
   rpc DumpTransactions(Empty) returns (Empty);
   rpc GetLatestBalance(GetLatestBalanceRequest) returns (GetBalanceResponse);
+  rpc GetBalance(GetBalanceRequest) returns (GetBalanceResponse);
 }

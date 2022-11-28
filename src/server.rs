@@ -7,7 +7,7 @@ use crate::model::Transaction;
 
 use crate::proto::acorn::acorn_server::{Acorn, AcornServer};
 use crate::proto::acorn::{
-    AddTransactionRequest, Empty, GetBalanceResponse, GetLatestBalanceRequest,
+    AddTransactionRequest, Empty, GetBalanceRequest, GetBalanceResponse, GetLatestBalanceRequest,
 };
 
 mod error;
@@ -69,6 +69,30 @@ impl Acorn for AcornImpl {
                 .lock()
                 .unwrap()
                 .get_latest_balance(&account)
+                .into_iter()
+                .map(|amount| amount.to_message())
+                .collect(),
+        };
+        Ok(Response::new(reply))
+    }
+
+    async fn get_balance(
+        &self,
+        request: Request<GetBalanceRequest>,
+    ) -> Result<Response<GetBalanceResponse>, Status> {
+        let balance_request = request.into_inner();
+        let account = balance_request.account;
+        let reply = GetBalanceResponse {
+            account: account.clone(),
+            amounts: self
+                .ledger
+                .lock()
+                .unwrap()
+                .get_balance(
+                    &account,
+                    balance_request.begin.unwrap().into(),
+                    balance_request.end.unwrap().into(),
+                )
                 .into_iter()
                 .map(|amount| amount.to_message())
                 .collect(),

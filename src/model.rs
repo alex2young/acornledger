@@ -5,9 +5,9 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::error::Error;
 
-
 use crate::error::AcornError;
 use crate::proto;
+use crate::proto::acorn::Date;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Amount {
@@ -119,12 +119,7 @@ impl Transaction {
 
     pub fn from(transaction: proto::acorn::Transaction) -> Result<Self, Box<dyn Error>> {
         Self::new(
-            transaction
-                .date
-                .map(|date| {
-                    NaiveDate::from_ymd_opt(date.year as i32, date.month, date.day).unwrap()
-                })
-                .unwrap(),
+            transaction.date.map(Date::into).unwrap(),
             &transaction.description,
             transaction.postings.iter().map(Posting::from).collect(),
         )

@@ -69,7 +69,7 @@ impl Ledger {
             .flat_map(|(_, t)| t.postings().iter())
             .filter(|&p| p.account() == account)
             .map(|p| p.amount())
-            .group_by(|&a| a.currency())
+            .chunk_by(|&a| a.currency())
             .into_iter()
             .map(|(key, group)| {
                 (
@@ -77,7 +77,7 @@ impl Ledger {
                     group
                         .into_iter()
                         .map(|a| a.number())
-                        .reduce(|acc, n| (acc + n)),
+                        .reduce(|acc, n| acc + n),
                 )
             })
             .map(|(currency, number)| Amount::new(number.unwrap(), currency.to_string()))
